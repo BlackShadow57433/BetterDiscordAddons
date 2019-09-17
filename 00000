@@ -1,0 +1,212 @@
+// META {"name": "OwnerTag", "website": "https://github.com/mwittrien/BetterDiscordAddons/tree/master/Plugins/OwnerTag", "source": "https: //raw.githubusercontent .com / mwittrien / BetterDiscordAddons / master / Plugins / OwnerTag / OwnerTag.plugin.js "} * //
+
+clase  OwnerTag {
+	getName () { return  " OwnerTag " ;}
+
+	getVersion () { return  " 1.1.7 " ;}
+
+	getAuthor () { return  " DevilBro " ;}
+
+	getDescription () { return  " Agrega una etiqueta como Bottags al propietario del servidor " ;}
+
+	constructor () {
+		esta . registro de cambios  = {
+			" arreglado " : [[ " Actualización del tema ligero " , " Errores solucionados para la actualización del tema ligero, que rompió el 99% de mis complementos " ]]
+		};
+
+		esta . patchModules  = {
+			" MemberListItem " : [ " componentDidMount " , " componentDidUpdate " ],
+			" MessageUsername " : [ " componentDidMount " , " componentDidUpdate " ],
+			" UserPopout " : [ " componentDidMount " , " componentDidUpdate " ],
+			" UserProfile " : [ " componentDidMount " , " componentDidUpdate " ],
+			" StandardSidebarView " : " componentWillUnmount "
+		};
+	}
+
+	initConstructor () {
+		esta . valores predeterminados  = {
+			configuración : {
+				addInChatWindow : 		{valor : verdadero , interno : verdadero , descripción : " Mensajes " },
+				addInMemberList : 		{valor : verdadero , interno : verdadero , descripción : " Lista de miembros " },
+				addInUserPopout : 		{value : true , inner : true , descripción : " User Popouts " },
+				addInUserProfil : 		{value : true , inner : true , descripción : " User Profile Modal " },
+				useRoleColor : 			{valor : verdadero , interno : falso , descripción : " Use el color de rol en lugar del azul predeterminado " },
+				useBlackFont : 			{value : false , inner : false , descripción : " En lugar de oscurecer el color de rol en colores brillantes, use una fuente negra " },
+				useCrown : 				{value : false , inner : false , description : " Use el icono de la corona en lugar de la etiqueta de propietario " },
+				hideNativeCrown : 		{valor : verdadero , interno : falso , descripción : " Ocultar el ícono de corona nativo (no el del complemento) " },
+				addForAdmins : 			{valor : falso , interno : falso , descripción : " Agregue también la etiqueta para cualquier usuario con derechos de administrador " . }
+			},
+			entradas : {
+				ownTagName : 				{value : " Propietario " , descripción : " Texto de etiqueta de propietario para propietarios " },
+				ownAdminTagName : 		{value : " Admin " , descripción : " Texto de etiqueta de propietario para administradores " }
+			}
+		};
+	}
+
+	getSettingsPanel () {
+		if ( ! global . BDFDB  ||  typeof  BDFDB  ! =  " object "  ||  ! BDFDB . loaded  ||  ! this . inició ) return ;
+		configuraciones var =  BDFDB . getAllData ( esto , " configuración " );
+		entradas var =  BDFDB . getAllData ( esto , " entradas " );
+		var settingshtml =  ` <div class =" $ { this . name } -configuraciones BDFDB-settings "> <div class =" $ { BDFDB . disCNS . titledefault  +  BDFDB . disCNS . title  +  BDFDB . disCNS . size18  +  BDFDB . disCNS . height24  +  BDFDB . disCNS . weightnormal  +  BDFDB . disCN . marginbottom8 }"> $ { this . name } </div> <div class =" BDFDB-settings-inner "> ` ;
+		para ( deje clave en insumos) {
+			settingshtml + =  ` <div class =" $ { BDFDB . disCNS . flex  +  BDFDB . disCNS . flex2  +  BDFDB . disCNS . horizontal  +  BDFDB . disCNS . horizontal2  +  BDFDB . disCNS . directionrow  +  BDFDB . disCNS . justifystart  +  BDFDB . disCNS . aligncenter  +  BDFDB . DISCNS. nowrap  +  BDFDB . DISCN . marginbottom8 } "style =" flex: 1 1 auto; "> <h3 class =" $ { BDFDB . DISCNS . titledefault  +  BDFDB . DISCNS . título  +  BDFDB . DISCNS . peso medio  +  BDFDB . DISCNS . size16  +  BDFDB . DISCN . flexchild } "style =" flex: 0 0 50%; "> $ { this . por defecto . input[llave]. descripción } </h3> <div class = " $ { BDFDB . disCNS . inputwrapper  +  BDFDB . disCNS . vertical  +  BDFDB . disCNS . flex  +  BDFDB . disCN . directioncolumn } " style = "flex: 1 1 auto;"> < input type = "text" option = " $ { key } " value = " $ { input [key] } " placeholder = " $ { this . por defecto . input [key].} "class =" $ { BDFDB . DISCNS . inputdefault  +  BDFDB . DISCNS . entrada  +  BDFDB . DISCN . size16 } "> </div> </div> ` ;
+		}
+		para ( deje clave en la configuración) {
+			if ( ! this . por defecto . settings [clave]. inner ) settingshtml + =  ` <div class =" $ { BDFDB . disCNS . flex  +  BDFDB . disCNS . flex2  +  BDFDB . disCNS . horizontal  +  BDFDB . disCNS . horizontal2  +  BDFDB . DISCNS . directionrow  +  BDFDB . DISCNS . justifystart +  BDFDB . DISCNS . aligncenter  +  BDFDB . DISCNS . nowrap  +  BDFDB . DISCN . marginbottom8 } "style =" flex: 1 1 auto; "> <h3 class =" $ { BDFDB . DISCNS . titledefault  +  BDFDB . DISCNS . título  +  BDFDB . DISCNS . marginreset  +  BDFDB . DISCNS . peso medio  +  BDFDB . DISCNS .size16  +  BDFDB . DISCNS . altura24  +  BDFDB . DISCN . flexchild } "style =" flex: 1 1 auto; "> $ { this . defaults . settings [key]. description } </h3> <div class =" $ { BDFDB . DISCNS . flexchild  +  BDFDB . DISCNS . conmutable  +  BDFDB . DISCNS . interruptor  +  BDFDB . DISCNS .valor de cambio  +  BDFDB . DISCNS . switchsizedefault  +  BDFDB . DISCNS . switchsize  +  BDFDB . DISCN . switchthemedefault } "style =" flex: 0 0 auto; "> <input type =" checkbox "value =" settings $ { key } "class =" $ { BDFDB . DISCNS . switchinnerenabled  +  BDFDB . DISCN . switchinner } settings-switch " $ { settings [key] ?  " verificado"  :  " " } > </div> </div>`;
+		}
+		settingshtml + =  ` <div class =" $ { BDFDB . disCNS . flex  +  BDFDB . disCNS . flex2  +  BDFDB . disCNS . horizontal  +  BDFDB . disCNS . horizontal2  +  BDFDB . disCNS . directionrow  +  BDFDB . disCNS . justifystart  +  BDFDB . disCNS . aligncenter  +  BDFDB . DISCNS. nowrap  +  BDFDB . DISCN . marginbottom8 } "style =" flex: 1 1 auto; "> <h3 class =" $ { BDFDB . DISCNS . titledefault  +  BDFDB . DISCNS . título  +  BDFDB . DISCNS . marginreset  +  BDFDB . DISCNS . peso medio  +  BDFDB . DISCNS . size16  +  BDFDB . DISCNS . altura24  +  BDFDB .DISCN . flexchild } "style =" flex: 0 0 auto; "> Agregar etiqueta de propietario en: </h3> </div> <div class =" BDFDB-settings-inner-list "> ` ;
+		para ( deje clave en la configuración) {
+			if ( esto . valores predeterminados . configuración [clave]. interior ) settingshtml + =  ` <div class =" $ { BDFDB . disCNS . flex  +  BDFDB . disCNS . flex2  +  BDFDB . disCNS . horizontal  +  BDFDB . disCNS . horizontal2  +  BDFDB . DISCNS . directionrow  +  BDFDB . DISCNS . justifystart  + BDFDB . DISCNS . aligncenter  +  BDFDB . DISCNS . nowrap  +  BDFDB . DISCN . marginbottom8 } "style =" flex: 1 1 auto; "> <h3 class =" $ { BDFDB . DISCNS . titledefault  +  BDFDB . DISCNS . título  +  BDFDB . DISCNS . marginreset  +  BDFDB . DISCNS . peso medio  +  BDFDB . DISCNS .size16  +  BDFDB . DISCNS . altura24  +  BDFDB . DISCN . flexchild } "style =" flex: 1 1 auto; "> $ { this . defaults . settings [key]. description } </h3> <div class =" $ { BDFDB . DISCNS . flexchild  +  BDFDB . DISCNS . conmutable  +  BDFDB . DISCNS . interruptor  +  BDFDB . DISCNS .valor de cambio  +  BDFDB . DISCNS . switchsizedefault  +  BDFDB . DISCNS . switchsize  +  BDFDB . DISCN . switchthemedefault } "style =" flex: 0 0 auto; "> <input type =" checkbox "value =" settings $ { key } "class =" $ { BDFDB . DISCNS . switchinnerenabled  +  BDFDB . DISCN . switchinner } settings-switch " $ { settings [key] ?  " verificado"  :  " " } > </div> </div>`;
+		}
+		settingshtml + =  ` </div> ` ;
+		settingshtml + =  ` </div> </div> ` ;
+
+		deje settingspanel =  BDFDB . htmlToElement (settingshtml);
+
+		BDFDB . initElements (settingspanel, this );
+
+		BDFDB . addEventListener ( this , settingspanel, " keyup " , BDFDB . dotCN . input , () => { this . saveInputs (settingspanel);});
+
+		panel de configuración de retorno ;
+	}
+
+	// legado
+	carga () {}
+
+	inicio () {
+		if ( ! global . BDFDB ) global . BDFDB  = {myPlugins : {}};
+		if ( global . BDFDB  &&  global . BDFDB . myPlugins  &&  typeof  global . BDFDB . myPlugins  ==  " objeto " ) global . BDFDB . myPlugins [ esto . getName ()] =  esto ;
+		var libraryScript =  documento . querySelector ( ' script principal # BDFDBLibraryScript ' );
+		if ( ! libraryScript || ( performance . now () -  libraryScript . getAttribute ( " date " )) >  600000 ) {
+			if (libraryScript) libraryScript . eliminar ();
+			libraryScript =  documento . createElement ( " script " );
+			LibraryScript . setAttribute ( " id " , " BDFDBLibraryScript " );
+			LibraryScript . setAttribute ( " tipo " , " texto / javascript " );
+			LibraryScript . setAttribute ( " src " , " https://mwittrien.github.io/BetterDiscordAddons/Plugins/BDFDB.js " );
+			LibraryScript . setAttribute ( " fecha " , rendimiento . ahora ());
+			LibraryScript . addEventListener ( " load " , () => { this . initialize ();});
+			documento . la cabeza . appendChild (libraryScript);
+			esta . libLoadTimeout  =  setTimeout (() => {
+				LibraryScript . eliminar ();
+				BDFDB . BibliotecaRequires . request ( " https://mwittrien.github.io/BetterDiscordAddons/Plugins/BDFDB.js " , ( error , respuesta , cuerpo ) => {
+					si (cuerpo) {
+						libraryScript =  documento . createElement ( " script " );
+						LibraryScript . setAttribute ( " id " , " BDFDBLibraryScript " );
+						LibraryScript . setAttribute ( " tipo " , " texto / javascript " );
+						LibraryScript . setAttribute ( " fecha " , rendimiento . ahora ());
+						LibraryScript . innerText  = cuerpo;
+						documento . la cabeza . appendChild (libraryScript);
+					}
+					esta . initialize ();
+				});
+			}, 15000 );
+		}
+		otra cosa  si ( mundial . BDFDB  &&  typeof  BDFDB  ===  " objeto "  &&  BDFDB . cargado ) este . initialize ();
+		esta . startTimeout  =  setTimeout (() => { this . initialize ();}, 30000 );
+	}
+
+	initialize () {
+		if ( global . BDFDB  &&  typeof  BDFDB  ===  " objeto "  &&  BDFDB . cargado ) {
+			if ( esto . comenzó ) volver ;
+			BDFDB . loadMessage ( esto );
+
+			BDFDB . WebModules . forceAllUpdates ( esto );
+
+			esta . agregarHideCSS ();
+		}
+		más {
+			consola . de error ( ` % c [ $ { esto . getName () } ]% c ' , ' color: # 3a71c1; font-weight: 700; ' , ' ' , ' Fatal Error: No se pudo cargar funciones BD! ' );
+		}
+	}
+
+	stop () {
+		if ( global . BDFDB  &&  typeof  BDFDB  ===  " objeto "  &&  BDFDB . cargado ) {
+			BDFDB . removeEles ( " .owner -tag, .owner-tag-crown " );
+
+			BDFDB . removeLocalStyle ( this . name  +  " HideCrown " );
+
+			BDFDB . unloadMessage ( esto );
+		}
+	}
+
+
+	// comienzo de funciones propias
+
+	saveInputs ( panel de configuración ) {
+		dejar entradas = {};
+		for ( permite la entrada de  settingspanel . querySelectorAll ( BDFDB . dotCN . input )) {
+			entradas [ entrada . getAttribute ( " opción " )] =  entrada . valor ;
+		}
+		BDFDB . saveAllData (entradas, esto , " entradas " );
+		esta . SettingsUpdated  =  true ;
+	}
+
+	processMemberListItem ( instancia , contenedor , valor de retorno ) {
+		if ( instancia . props  &&  BDFDB . getData ( " addInMemberList " , this , " settings " )) this . addOwnerTag ( instancia . props . usuario , nulo , wrapper . querySelector ( BDFDB . dotCN . namecontainernamewrapper ), " lista " , BDFDB . disCN .bottagnametag , nulo );
+	}
+
+	processUserPopout ( instancia , contenedor , valor de retorno ) {
+		if ( instancia . props  &&  BDFDB . getData ( " addInUserPopout " , this , " settings " )) this . addOwnerTag ( instancia . props . usuario , nulo , wrapper . querySelector ( BDFDB . dotCN . nametag ), " popout " , BDFDB . disCN . bottagnametag, envoltorio);
+	}
+
+	processUserProfile ( instancia , contenedor , valor de retorno ) {
+		if ( instancia . props  &&  BDFDB . getData ( " addInUserProfil " , this , " settings " )) this . addOwnerTag ( instancia . accesorios . usuario , nulo , envoltorio . querySelector ( BDFDB . dotCN . nametag ), " perfil " , BDFDB . disCNS . bottagnametag +  BDFDB . DISCN . userprofilebottag , wrapper);
+	}
+
+	processMessageUsername ( instancia , contenedor , valor de retorno , nombres de método ) {
+		dejar mensaje =  BDFDB . getReactValue (instancia, " props.message " );
+		if (mensaje &&  BDFDB . getData ( " addInChatWindow " , esto , " configuración " )) {
+			dejar nombre de usuario =  contenedor . querySelector ( BDFDB . dotCN . messageusername );
+			if (nombre de usuario) {
+				let messagegroup =  BDFDB . getParentEle ( BDFDB . dotCN . messagegroup , wrapper);
+				esta . addOwnerTag ( mensaje . autor , mensaje . id_canal , nombre de usuario . parentElement , " chat " , BDFDB . contiene Clase (grupo de mensajes, BDFDB . disCN . messagegroupcozy ) ?  BDFDB . disCN . bottagmessagecozy  :  BDFDB . disCN . bottagmessagecompact , null );
+			}
+		}
+	}
+
+	processStandardSidebarView ( instancia , contenedor , valor de retorno ) {
+		if ( esto . Configuración actualizada ) {
+			eliminar  este . Configuraciones Actualizadas ;
+			BDFDB . removeEles ( " .owner -tag, .owner-tag-crown " );
+			BDFDB . WebModules . forceAllUpdates ( esto );
+			esta . agregarHideCSS ();
+		}
+	}
+
+	addOwnerTag ( info , channelid , wrapper , type , selector  =  " " , container ) {
+		if ( ! info ||  ! wrapper ||  ! wrapper . parentElement ) return ;
+		BDFDB . removeEles ( wrapper . querySelectorAll ( " .owner -tag, .owner-tag-crown " ));
+		dejar canal =  BDFDB . LibraryModules . ChannelStore . getChannel (channelId ||  BDFDB . LibraryModules . LastChannelStore . getChannelId ());
+		if ( ! channel) return ;
+		dejar que la alianza =  BDFDB . LibraryModules . GuildStore . getGuild ( channel . guild_id );
+		dejar configuración =  BDFDB . getAllData ( esto , " configuración " );
+		dejar isowner =  canal . ownerId  ==  info . id  || Alianza &&  gremio . ownerId  ==  info . id ;
+		if ( ! (isowner || ( settings . addForAdmins  &&  BDFDB . isUserAllowedTo ( " ADMINISTRATOR " , info . id )))) return ;
+		let member =  configuración . useRoleColor  ? ( BDFDB . LibraryModules . MemberStore . GetMember ( canal . Guild_id , información . ID ) || {}) : {};
+		if ( ! settings . useCrown ) {
+			let etiqueta =  BDFDB . htmlToElement ( ` <span class =" owner-tag $ { isowner ?  " owner-tag-owner "  :  " owner-tag-admin " } owner- $ { type } -tag $ { ( settings . useRoleColor  ?  " owner-tag -rolecolor "  :  " " ) +  BDFDB . disCN . bottag  + (selector ? ( "  " + selector) :  " " ) } "style =" order: 10! important; "> $ { BDFDB . getData (isowner ?  " ownTagName "  :  " ownAdminTagName " , this , " input " ) } </span> ` );
+			dejar invertir = contenedor &&  contenedor . firstElementChild  &&  ! ( BDFDB . Contiene Clase ( contenedor . FirstElementChild , BDFDB . DisCN . Userpopoutheadernormal ) ||  BDFDB . ContieneClass ( contenedor . FirstElementChild , BDFDB . DisCN . Userprofiletopsectionnormal ));
+			BDFDB . addClass (etiqueta, invertir ?  BDFDB . disCN . bottaginvert  :  BDFDB . disCN . bottagregular );
+			deje que EditUsersData =  BDFDB . isPluginEnabled ( " EditUsers " ) ?  ventana . bdplugins . EditUsers . plug-in . getUserData ( id . de información , contenedor) : {};
+			deje tagcolor =  BDFDB . colorCONVERT ( EditUsersData . color1  ||  member . colorString , " RGB " );
+			let isbright =  BDFDB . colorISBRIGHT (tagcolor);
+			tagcolor = isbright ? ( configuración . useBlackFont  ? tagcolor :  BDFDB . colorCHANGE (tagcolor, - 0.3 )) : tagcolor;
+			la etiqueta . estilo . setProperty (invertir ?  " color "  :  " background-color " , tagcolor, " important " );
+			si (isbright &&  configuración . useBlackFont ) etiqueta . estilo . setProperty (invertir ?  " background-color "  :  " color " , " black " , " important " );
+			envoltorio . insertBefore (etiqueta, contenedor . querySelector ( " .TRE-tag, svg [nombre = Dispositivo móvil] " ));
+		}
+		más {
+			60697 7,48377 3,5913 7,50588 3.57559C7.5192 3,56612 7,53255 3,55663 7,54458 6,77325 3.54535L6.90258 2.90268C6.77325 2.56068 6.90258 2.77335 2.43135L7.76458 1.56935C7.89392 8.10658 1.44002 8.23592 1.44002 1.56935L9.09792 2.43135C9.22725 9.22725 2.77335 9.09792 2.56068 2.90268L8 .45592 3.54535C8.46794 3.55686 8.48154 3.56651 8.49516 3.57618C8.51703 3.5917 8.53897 3.60727 8.55458 3.63068L10.8686 7.10202L13.6572 5.42868ZM2.66667 12.6673H13.3333V14.0007H2.66667V12? "currentColor": "# b3b3b3"} "> </path> </svg>`); 45592 3.54535C8.46794 3.55686 8.48154 3.56651 8.49516 3.57618C8.51703 3.5917 8.53897 3.60727 8.55458 3.63068L10.8686 7.10202L13.6572 5.42868ZM2.66667 12.6673H13.3333V14.0007H2.66667Vow? "currentColor": "# b3b3b3"} "> </path> </svg>`); 45592 3.54535C8.46794 3.55686 8.48154 3.56651 8.49516 3.57618C8.51703 3.5917 8.53897 3.60727 8.55458 3.63068L10.8686 7.10202L13.6572 5.42868ZM2.66667 12.6673H13.3333V14.0007H2.66667Vow? "currentColor": "# b3b3b3"} "> </path> </svg>`);
+			corona . addEventListener ( " mouseenter " , () => {
+				BDFDB . createTooltip (isowner ? ( channel . type  ==  3  ?  BDFDB . LanguageStrings . GROUP_OWNER  :  BDFDB . LanguageStrings . GUILD_OWNER ) :  BDFDB . LanguageStrings . ADMINISTRATOR , corona, {type :  " top " });
+			});
+			envoltorio . insertBefore (corona, envoltorio . querySelector ( " .TRE-tag, svg [name = MobileDevice] " ));
+		}
+	}
+
+	agregarHideCSS () {
+		configuraciones var =  BDFDB . getAllData ( esto , " configuración " );
+		if ( configuración . hideNativeCrown  ||  configuración . useCrown ) BDFDB . appendLocalStyle ( this . name  +  " HideCrown " , ` $ { BDFDB . dotCNS . member  +  BDFDB . dotCN . memberownericon } : not (.owner-tag-crown) {display: none;} ` );
+		de lo contrario  BDFDB . removeLocalStyle ( this . name  +  " HideCrown " );
+	}
+}
